@@ -18,7 +18,28 @@
  */
 package io.druid.data.input;
 
-public class ParquetHadoopInputRowParser
+import io.druid.data.input.impl.ParseSpec;
+
+import java.nio.ByteBuffer;
+
+public class ParquetHadoopInputRowParser implements ByteBufferInputRowParser
 {
 
+  @Override
+  public InputRow parse(ByteBuffer input)
+  {
+    return null;
+  }
+
+  @Override
+  public ParseSpec getParseSpec()
+  {
+    return null;
+  }
+
+  @Override
+  public ByteBufferInputRowParser withParseSpec(ParseSpec parseSpec)
+  {
+    return null;
+  }
 }
