@@ -18,28 +18,40 @@
  */
 package io.druid.data.input;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.druid.data.input.impl.InputRowParser;
 import io.druid.data.input.impl.ParseSpec;
 
-import java.nio.ByteBuffer;
-
-public class ParquetHadoopInputRowParser implements ByteBufferInputRowParser
+public class ParquetHadoopInputRowParser implements InputRowParser<InputRow>
 {
 
-  @Override
-  public InputRow parse(ByteBuffer input)
-  {
-    return null;
-  }
+	private final ParseSpec parseSpec;
 
-  @Override
-  public ParseSpec getParseSpec()
-  {
-    return null;
-  }
+	@JsonCreator
+	public ParquetHadoopInputRowParser(
+	    @JsonProperty("parseSpec") ParseSpec parseSpec)
+	{
+		this.parseSpec = parseSpec;
+	}
 
-  @Override
-  public ByteBufferInputRowParser withParseSpec(ParseSpec parseSpec)
-  {
-    return null;
-  }
+	@Override
+	public InputRow parse(InputRow input)
+	{
+		return input;
+	}
+
+	@JsonProperty
+	@Override
+	public ParseSpec getParseSpec()
+	{
+		return parseSpec;
+	}
+
+	@Override
+	public InputRowParser withParseSpec(ParseSpec parseSpec)
+	{
+		return new ParquetHadoopInputRowParser(parseSpec);
+	}
 }
