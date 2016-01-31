@@ -5,6 +5,9 @@ import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.PrimitiveConverter;
 import org.joda.time.DateTime;
 
+/**
+ * timestamp field converter, only accept types of String and Long
+ */
 public class TimestampFieldConverter extends PrimitiveConverter
 {
 	private InputRowGroupConverter parent;

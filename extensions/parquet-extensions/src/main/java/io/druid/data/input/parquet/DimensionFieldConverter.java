@@ -4,6 +4,14 @@ import org.apache.parquet.column.Dictionary;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.PrimitiveConverter;
 
+/**
+ * Convert non string dimensions to string
+ *  int/boolean/long => string
+ *  float/double dimensions will throw exceptions
+ *
+ *  string dimensions should support dictionary decoding
+ *
+ */
 public class DimensionFieldConverter
 {
 
@@ -46,7 +54,7 @@ public class DimensionFieldConverter
 	}
 
 	/**
-	 * enable string field read from dictionary , (parquet-pig)
+	 * enable string field read from dictionary , (refer to parquet-pig)
 	 * 
 	 * @author du00
 	 *

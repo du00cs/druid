@@ -2,6 +2,9 @@ package io.druid.data.input.parquet;
 
 import org.apache.parquet.io.api.PrimitiveConverter;
 
+/**
+ * metric field converter, only accept double, float and int/long
+ */
 public class MetricFieldConverter extends PrimitiveConverter
 {
 	private InputRowGroupConverter parent;

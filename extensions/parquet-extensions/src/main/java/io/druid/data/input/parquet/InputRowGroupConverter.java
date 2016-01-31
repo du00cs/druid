@@ -3,6 +3,7 @@ package io.druid.data.input.parquet;
 import java.util.List;
 import java.util.Map;
 
+import com.google.api.client.util.Maps;
 import org.apache.parquet.io.api.Converter;
 import org.apache.parquet.io.api.GroupConverter;
 import org.apache.parquet.schema.MessageType;
@@ -36,25 +37,25 @@ public class InputRowGroupConverter extends GroupConverter
 			{
 				if (type.getName().equals(timestamp))
 				{
-					converters[i] = new TimestampFieldConverter(parent);
+					converters[i] = new TimestampFieldConverter(this);
 				} else if (dimensions.contains(type.getName()))
 				{
 					switch (type.getOriginalType())
 					{
 					case UTF8:
-						converters[i] = new DimensionFieldConverter.StringFieldConverter(parent, type.getName());
+						converters[i] = new DimensionFieldConverter.StringFieldConverter(this, type.getName());
 						break;
 					default:
-						converters[i] = new DimensionFieldConverter.NonStringFieldConverter(parent, type.getName());
+						converters[i] = new DimensionFieldConverter.NonStringFieldConverter(this, type.getName());
 						break;
 					}
 				} else
 				{
-					converters[i] = new MetricFieldConverter(parent, type.getName());
+					converters[i] = new MetricFieldConverter(this, type.getName());
 				}
 			} else
 			{
-				throw new IllegalArgumentException("Incompatibal type: " + type.getName());
+				throw new IllegalArgumentException("Incompatibal field: <" + type.getName() + ", " + type.getOriginalType() + ">");
 			}
 		}
 	}
@@ -83,14 +84,11 @@ public class InputRowGroupConverter extends GroupConverter
 	@Override
 	public void start()
 	{
-		// TODO Auto-generated method stub
-
+		event = Maps.newHashMap();
 	}
 
 	@Override
 	public void end()
 	{
-		// TODO Auto-generated method stub
-
 	}
 }

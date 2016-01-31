@@ -11,6 +11,9 @@ import org.apache.parquet.schema.MessageType;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * `copy` from parquet-hadoop examples
+ */
 public class InputRowReadSupport extends ReadSupport<InputRow>
 {
 
