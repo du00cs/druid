@@ -85,9 +85,9 @@
         <module>processing</module>
         <module>server</module>
         <module>services</module>
-        <module>integration-tests</module>
-        <module>benchmarks</module>
-        <module>aws-common</module>
+        <!--<module>integration-tests</module>-->
+        <!--<module>benchmarks</module>-->
+        <!--<module>aws-common</module>-->
         <!-- Non-default modules -->
         <!--<module>extensions/cassandra-storage</module>-->
         <module>extensions/hdfs-storage</module>
