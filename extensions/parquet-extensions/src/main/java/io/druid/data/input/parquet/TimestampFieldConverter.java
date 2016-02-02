@@ -10,46 +10,46 @@ import org.joda.time.DateTime;
  */
 public class TimestampFieldConverter extends PrimitiveConverter
 {
-	private InputRowGroupConverter parent;
-	private boolean dictionarySupport;
-	private String[] dict;
+  private DruidGroupConverter parent;
+  private boolean dictionarySupport;
+  private String[] dict;
 
-	public TimestampFieldConverter(InputRowGroupConverter parent)
-	{
-		this.parent = parent;
-	}
+  public TimestampFieldConverter(DruidGroupConverter parent)
+  {
+    this.parent = parent;
+  }
 
-	@Override
-	final public void addBinary(Binary value)
-	{
-		parent.setTimestamp(new DateTime(value.toStringUsingUTF8()));
-	}
+  @Override
+  final public void addBinary(Binary value)
+  {
+    parent.setTimestamp(new DateTime(value.toStringUsingUTF8()));
+  }
 
-	@Override
-	public boolean hasDictionarySupport()
-	{
-		return dictionarySupport;
-	}
+  @Override
+  public boolean hasDictionarySupport()
+  {
+    return dictionarySupport;
+  }
 
-	@Override
-	public void setDictionary(Dictionary dictionary)
-	{
-		dict = new String[dictionary.getMaxId() + 1];
-		for (int i = 0; i <= dictionary.getMaxId(); i++)
-		{
-			dict[i] = dictionary.decodeToBinary(i).toStringUsingUTF8();
-		}
-	}
+  @Override
+  public void setDictionary(Dictionary dictionary)
+  {
+    dict = new String[dictionary.getMaxId() + 1];
+    for (int i = 0; i <= dictionary.getMaxId(); i++) {
+      dict[i] = dictionary.decodeToBinary(i).toStringUsingUTF8();
+    }
+    dictionarySupport = true;
+  }
 
-	@Override
-	public void addValueFromDictionary(int dictionaryId)
-	{
-		parent.setTimestamp(new DateTime(dict[dictionaryId]));
-	}
+  @Override
+  public void addValueFromDictionary(int dictionaryId)
+  {
+    parent.setTimestamp(new DateTime(dict[dictionaryId]));
+  }
 
-	@Override
-	public void addLong(long value)
-	{
-		parent.setTimestamp(new DateTime(value));
-	}
+  @Override
+  public void addLong(long value)
+  {
+    parent.setTimestamp(new DateTime(value));
+  }
 }
