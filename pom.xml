@@ -85,29 +85,29 @@
         <module>processing</module>
         <module>server</module>
         <module>services</module>
-        <module>integration-tests</module>
-        <module>benchmarks</module>
-        <module>aws-common</module>
+        <!--<module>integration-tests</module>-->
+        <!--<module>benchmarks</module>-->
+        <!--<module>aws-common</module>-->
         <!-- Non-default modules -->
-        <module>extensions/cassandra-storage</module>
+        <!--<module>extensions/cassandra-storage</module>-->
         <module>extensions/hdfs-storage</module>
-        <module>extensions/s3-extensions</module>
-        <module>extensions/graphite-emitter</module>
+        <!--<module>extensions/s3-extensions</module>-->
+        <!--<module>extensions/graphite-emitter</module>-->
         <!-- kafka-seven extension is not built by default since
              Kafka 0.7 is not available in Maven Central -->
         <!-- <module>extensions/kafka&#45;seven</module> -->
         <module>extensions/kafka-eight</module>
-        <module>extensions/kafka-eight-simpleConsumer</module>
-        <module>extensions/rabbitmq</module>
+        <!--<module>extensions/kafka-eight-simpleConsumer</module>-->
+        <!--<module>extensions/rabbitmq</module>-->
         <module>extensions/histogram</module>
         <module>extensions/mysql-metadata-storage</module>
         <module>extensions/postgresql-metadata-storage</module>
-        <module>extensions/azure-extensions</module>
-        <module>extensions/namespace-lookup</module>
-        <module>extensions/kafka-extraction-namespace</module>
-        <module>extensions/cloudfiles-extensions</module>
-        <module>extensions/datasketches</module>
-        <module>extensions/avro-extensions</module>
+        <!--<module>extensions/azure-extensions</module>-->
+        <!--<module>extensions/namespace-lookup</module>-->
+        <!--<module>extensions/kafka-extraction-namespace</module>-->
+        <!--<module>extensions/cloudfiles-extensions</module>-->
+        <!--<module>extensions/datasketches</module>-->
+        <!--<module>extensions/avro-extensions</module>-->
         <module>extensions/parquet-extensions</module>
         <!-- distribution packaging -->
         <module>distribution</module>

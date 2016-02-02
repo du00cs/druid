@@ -65,36 +65,38 @@
                                 <argument>--clean</argument>
                                 <argument>--defaultVersion</argument>
                                 <argument>${project.parent.version}</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-examples</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-azure-extensions</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-cassandra-storage</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-datasketches</argument>
+                                <!--<argument>-c</argument>-->
+                                <!--<argument>io.druid.extensions:druid-examples</argument>-->
+                                <!--<argument>-c</argument>-->
+                                <!--<argument>io.druid.extensions:druid-azure-extensions</argument>-->
+                                <!--<argument>-c</argument>-->
+                                <!--<argument>io.druid.extensions:druid-cassandra-storage</argument>-->
+                                <!--<argument>-c</argument>-->
+                                <!--<argument>io.druid.extensions:druid-datasketches</argument>-->
                                 <argument>-c</argument>
                                 <argument>io.druid.extensions:druid-hdfs-storage</argument>
                                 <argument>-c</argument>
                                 <argument>io.druid.extensions:druid-histogram</argument>
                                 <argument>-c</argument>
                                 <argument>io.druid.extensions:druid-kafka-eight</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-kafka-eight-simple-consumer</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-kafka-extraction-namespace</argument>
+                                <!--<argument>-c</argument>-->
+                                <!--<argument>io.druid.extensions:druid-kafka-eight-simple-consumer</argument>-->
+                                <!--<argument>-c</argument>-->
+                                <!--<argument>io.druid.extensions:druid-kafka-extraction-namespace</argument>-->
                                 <argument>-c</argument>
                                 <argument>io.druid.extensions:mysql-metadata-storage</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-namespace-lookup</argument>
+                                <!--<argument>-c</argument>-->
+                                <!--<argument>io.druid.extensions:druid-namespace-lookup</argument>-->
                                 <argument>-c</argument>
                                 <argument>io.druid.extensions:postgresql-metadata-storage</argument>
+                                <!--<argument>-c</argument>-->
+                                <!--<argument>io.druid.extensions:druid-rabbitmq</argument>-->
+                                <!--<argument>-c</argument>-->
+                                <!--<argument>io.druid.extensions:druid-s3-extensions</argument>-->
+                                <!--<argument>-c</argument>-->
+                                <!--<argument>io.druid.extensions:druid-cloudfiles-extensions</argument>-->
                                 <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-rabbitmq</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-s3-extensions</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-cloudfiles-extensions</argument>
+                                <argument>io.druid.extensions:druid-parquet-extensions</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -134,18 +136,18 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>download-licenses</id>
-                        <goals>
-                            <goal>download-licenses</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--<plugin>-->
+                <!--<groupId>org.codehaus.mojo</groupId>-->
+                <!--<artifactId>license-maven-plugin</artifactId>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>download-licenses</id>-->
+                        <!--<goals>-->
+                            <!--<goal>download-licenses</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
         </plugins>
     </build>
 </project>
