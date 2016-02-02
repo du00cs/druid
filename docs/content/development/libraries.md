@@ -57,8 +57,16 @@ UIs
 * [mistercrunch/panoramix](https://github.com/mistercrunch/panoramix) - A web application to slice, dice and visualize data out of Druid
 * [grafana](https://github.com/Quantiply/grafana-plugins/tree/master/features/druid) - A plugin for [Grafana](http://grafana.org/)
 * [Pivot](https://github.com/implydata/pivot) - An exploratory analytics UI for Druid
+* [Metabase](https://github.com/metabase/metabase) - Simple dashboards, charts and query tool for your Druid DB
 
 Tools
 ---
 
 * [Insert Segments](../../operations/insert-segment-to-db.html) - A tool that can insert segments' metadata into Druid metadata storage.
+
+Community Extensions
+--------------------
+
+These are extensions from the community. (If you would like yours listed please speak up!)
+
+* [acesinc/druid-cors-filter-extension](https://github.com/acesinc/druid-cors-filter-extension) - An extension to enable CORS headers in http requests.

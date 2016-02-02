@@ -1450,7 +1450,7 @@ public class IndexMergerTest
         new LongSumAggregatorFactory("A", "A"),
         new LongSumAggregatorFactory("C", "C")
     });
-    index2.add(new MapBasedInputRow(1l, Lists.newArrayList("d2"), ImmutableMap.<String, Object>of("d2", "z", "A", 2, "C", 100)));
+    index2.add(new MapBasedInputRow(1L, Lists.newArrayList("d2"), ImmutableMap.<String, Object>of("d2", "z", "A", 2, "C", 100)));
     closer.closeLater(index2);
 
     Interval interval = new Interval(0, new DateTime().getMillis());
@@ -1668,7 +1668,9 @@ public class IndexMergerTest
     dimConversions.put(0);
     dimConversions.put(2);
     dimConversions.put(4);
-    IndexMerger.DictIdSeeker dictIdSeeker = new IndexMerger.DictIdSeeker((IntBuffer) dimConversions.asReadOnlyBuffer().rewind());
+    IndexMerger.IndexSeeker dictIdSeeker = new IndexMerger.IndexSeekerWithConversion(
+        (IntBuffer) dimConversions.asReadOnlyBuffer().rewind()
+    );
     Assert.assertEquals(0, dictIdSeeker.seek(0));
     Assert.assertEquals(-1, dictIdSeeker.seek(1));
     Assert.assertEquals(1, dictIdSeeker.seek(2));
