@@ -6,6 +6,7 @@ import io.druid.data.input.MapBasedInputRow;
 import org.apache.parquet.io.api.Converter;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.Type;
 import org.joda.time.DateTime;
 
@@ -34,17 +35,26 @@ public class InputRowGroupConverter extends DruidGroupConverter
     for (int i = 0; i < converters.length; i++) {
       Type type = schema.getType(i);
       if (type.isPrimitive()) {
-        if (type.getName().equals(timestamp)) {
+        PrimitiveType primitiveType = type.asPrimitiveType();
+        if (primitiveType.getName().equals(timestamp)) {
           converters[i] = new TimestampFieldConverter(this);
-        } else if (dimensions.contains(type.getName())) {
-          switch (type.getOriginalType()) {
-            case UTF8:
+        } else if (dimensions.contains(primitiveType.getName())) {
+          switch (primitiveType.getPrimitiveTypeName()) {
+            case BINARY:
               converters[i] = new DimensionFieldConverter.StringFieldConverter(this, type.getName());
               break;
             default:
               converters[i] = new DimensionFieldConverter.NonStringFieldConverter(this, type.getName());
               break;
           }
+//          switch (primitiveType.getOriginalType()) {
+//            case UTF8:
+//              converters[i] = new DimensionFieldConverter.StringFieldConverter(this, type.getName());
+//              break;
+//            default:
+//              converters[i] = new DimensionFieldConverter.NonStringFieldConverter(this, type.getName());
+//              break;
+//          }
         } else {
           converters[i] = new MetricFieldConverter(this, type.getName());
         }
