@@ -22,7 +22,7 @@ Many of Druid's external dependencies can be plugged in as modules. Extensions c
 |Property|Description|Default|
 |--------|-----------|-------|
 |`druid.extensions.directory`|The root extension directory where user can put extensions related files. Druid will load extensions stored under this directory.|`extensions` (This is a relative path to Druid's working directory)|
-|`druid.extensions.hadoopDependenciesDir`|The root hadoop dependencies directory where user can put hadoop related dependencies files. Druid will load the dependencies based on the hadoop coordinate specified in the hadoop index task.|`hadoop_dependencies` (This is a relative path to Druid's working directory|
+|`druid.extensions.hadoopDependenciesDir`|The root hadoop dependencies directory where user can put hadoop related dependencies files. Druid will load the dependencies based on the hadoop coordinate specified in the hadoop index task.|`hadoop-dependencies` (This is a relative path to Druid's working directory|
 |`druid.extensions.loadList`|A JSON array of extensions to load from extension directories by Druid. If it is not specified, its value will be `null` and Druid will load all the extensions under `druid.extensions.directory`. If its value is empty list `[]`, then no extensions will be loaded at all.|null|
 |`druid.extensions.searchCurrentClassloader`|This is a boolean flag that determines if Druid will search the main classloader for extensions.  It defaults to true but can be turned off if you have reason to not automatically add all modules on the classpath.|true|
 
@@ -73,6 +73,16 @@ The following path is used for service discovery. It is **not** affected by `dru
 |Property|Description|Default|
 |--------|-----------|-------|
 |`druid.discovery.curator.path`|Services announce themselves under this ZooKeeper path.|`/druid/discovery`|
+
+### Startup Logging
+
+All nodes can log debugging information on startup.
+
+|Property|Description|Default|
+|--------|-----------|-------|
+|`druid.startup.logging.logProperties`|Log all properties on startup (from common.runtime.properties, runtime.properties, and the JVM command line).|false|
+
+Note that some sensitive information may be logged if these settings are enabled.
 
 ### Request Logging
 
@@ -140,8 +150,8 @@ The Druid servers emit various metrics and alerts via something we call an Emitt
 |Property|Description|Default|
 |--------|-----------|-------|
 |`druid.emitter.http.timeOut`|The timeout for data reads.|PT5M|
-|`druid.emitter.http.flushMillis`|How often to internal message buffer is flushed (data is sent).|60000|
-|`druid.emitter.http.flushCount`|How many messages can the internal message buffer hold before flushing (sending).|500|
+|`druid.emitter.http.flushMillis`|How often the internal message buffer is flushed (data is sent).|60000|
+|`druid.emitter.http.flushCount`|How many messages the internal message buffer can hold before flushing (sending).|500|
 |`druid.emitter.http.recipientBaseUrl`|The base URL to emit messages to. Druid will POST JSON to be consumed at the HTTP endpoint specified by this property.|none|
 
 #### Composing Emitter Module
