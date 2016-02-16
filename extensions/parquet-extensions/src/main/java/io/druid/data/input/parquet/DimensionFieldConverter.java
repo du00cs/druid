@@ -1,3 +1,22 @@
+/*
+ * Licensed to Metamarkets Group Inc. (Metamarkets) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. Metamarkets licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package io.druid.data.input.parquet;
 
 import com.google.api.client.util.Lists;
@@ -24,14 +43,12 @@ public class DimensionFieldConverter
 
   /**
    * convert all non-string dimension field to string
-   *
-   * @author du00
    */
   public static class NonStringFieldConverter extends PrimitiveConverter
   {
 
-    private DruidGroupConverter parent;
-    private String field;
+    private final DruidGroupConverter parent;
+    private final String field;
 
     public NonStringFieldConverter(DruidGroupConverter parent, String field)
     {
@@ -42,35 +59,33 @@ public class DimensionFieldConverter
     @Override
     public void addBoolean(boolean value)
     {
-      parent.addDimensionMetric(field, value + "");
+      parent.addDimensionMetric(field, Boolean.toString(value));
     }
 
     @Override
     public void addInt(int value)
     {
-      parent.addDimensionMetric(field, value + "");
+      parent.addDimensionMetric(field, Integer.toString(value));
     }
 
     @Override
     public void addLong(long value)
     {
-      parent.addDimensionMetric(field, value + "");
+      parent.addDimensionMetric(field, Long.toString(value));
     }
 
   }
 
   /**
    * enable string field read from dictionary , (refer to parquet-pig)
-   *
-   * @author du00
    */
   public static class StringFieldConverter extends PrimitiveConverter
   {
-    private DruidGroupConverter parent;
-    private String field;
+    private final DruidGroupConverter parent;
+    private final String field;
 
     private boolean dictionarySupport;
-    private String[] dict;
+    private List<String> dict;
 
     public StringFieldConverter(DruidGroupConverter parent, String field)
     {
@@ -93,9 +108,9 @@ public class DimensionFieldConverter
     @Override
     public void setDictionary(Dictionary dictionary)
     {
-      dict = new String[dictionary.getMaxId() + 1];
+      dict = Lists.newArrayListWithCapacity(dictionary.getMaxId() + 1);
       for (int i = 0; i <= dictionary.getMaxId(); i++) {
-        dict[i] = dictionary.decodeToBinary(i).toStringUsingUTF8();
+        dict.set(i, dictionary.decodeToBinary(i).toStringUsingUTF8());
       }
       dictionarySupport = true;
     }
@@ -103,39 +118,37 @@ public class DimensionFieldConverter
     @Override
     public void addValueFromDictionary(int dictionaryId)
     {
-      parent.addDimensionMetric(field, dict[dictionaryId]);
+      parent.addDimensionMetric(field, dict.get(dictionaryId));
     }
   }
 
   public static class ListFieldConverter extends DruidGroupConverter
   {
 
-    private final Converter[] converters;
-    private DruidGroupConverter parent;
-    private String field;
+    private final List<Converter> converters;
+    private final DruidGroupConverter parent;
+    private final String field;
+
+    private List<Object> list;
 
     public ListFieldConverter(DruidGroupConverter parent, GroupType schema, String name)
     {
       this.parent = parent;
       this.field = name;
-      this.converters = new Converter[schema.getFieldCount()];
+      this.converters = Lists.newArrayListWithCapacity(schema.getFieldCount());
 
-      int i = 0;
       for (Type field : schema.getFields()) {
         if (field.isPrimitive()) {
           if (field.getOriginalType() == OriginalType.UTF8) {
-            converters[i++] = new StringFieldConverter(this, null);
+            converters.add(new StringFieldConverter(this, null));
           } else {
-            converters[i++] = new NonStringFieldConverter(this, null);
+            converters.add(new NonStringFieldConverter(this, null));
           }
         } else {
-          converters[i++] = new ListFieldConverter(this, field.asGroupType(), name);
+          converters.add(new ListFieldConverter(this, field.asGroupType(), name));
         }
       }
     }
-
-
-    private List<Object> list;
 
     /**
      * called at initialization based on schema
@@ -148,7 +161,7 @@ public class DimensionFieldConverter
     @Override
     public Converter getConverter(int fieldIndex)
     {
-      return converters[fieldIndex];
+      return converters.get(fieldIndex);
     }
 
     /**
@@ -179,6 +192,9 @@ public class DimensionFieldConverter
       }
     }
 
+    /**
+     * leave empty, timestamp should not be a list
+     */
     @Override
     public void setTimestamp(DateTime dateTime)
     {

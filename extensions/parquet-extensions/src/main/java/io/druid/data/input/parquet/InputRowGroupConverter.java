@@ -1,6 +1,27 @@
+/*
+ * Licensed to Metamarkets Group Inc. (Metamarkets) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. Metamarkets licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package io.druid.data.input.parquet;
 
+import com.google.api.client.util.Lists;
 import com.google.api.client.util.Maps;
+import com.metamx.common.IAE;
 import io.druid.data.input.InputRow;
 import io.druid.data.input.MapBasedInputRow;
 import org.apache.parquet.io.api.Converter;
@@ -15,13 +36,13 @@ import java.util.Map;
 
 public class InputRowGroupConverter extends DruidGroupConverter
 {
-  private Converter[] converters;
+  private final List<Converter> converters;
 
-  private final InputRowGroupConverter parent;
+  protected final InputRowGroupConverter parent;
+  private final List<String> dimensions;
 
   protected DateTime datetime;
   protected Map<String, Object> event;
-  private List<String> dimensions;
 
   public InputRowGroupConverter(
       InputRowGroupConverter parent, MessageType schema, String timestamp,
@@ -30,42 +51,31 @@ public class InputRowGroupConverter extends DruidGroupConverter
   {
     this.dimensions = dimensions;
     this.parent = parent;
-    converters = new Converter[schema.getFieldCount()];
+    this.converters = Lists.newArrayListWithCapacity(schema.getFieldCount());
 
-    for (int i = 0; i < converters.length; i++) {
+    for (int i = 0; i < schema.getFieldCount(); i++) {
       Type type = schema.getType(i);
       if (type.isPrimitive()) {
         PrimitiveType primitiveType = type.asPrimitiveType();
         if (primitiveType.getName().equals(timestamp)) {
-          converters[i] = new TimestampFieldConverter(this);
+          converters.add(new TimestampFieldConverter(this));
         } else if (dimensions.contains(primitiveType.getName())) {
+          // original type sometimes missing
           switch (primitiveType.getPrimitiveTypeName()) {
             case BINARY:
-              converters[i] = new DimensionFieldConverter.StringFieldConverter(this, type.getName());
+              converters.add(new DimensionFieldConverter.StringFieldConverter(this, type.getName()));
               break;
             default:
-              converters[i] = new DimensionFieldConverter.NonStringFieldConverter(this, type.getName());
+              converters.add(new DimensionFieldConverter.NonStringFieldConverter(this, type.getName()));
               break;
           }
-//          switch (primitiveType.getOriginalType()) {
-//            case UTF8:
-//              converters[i] = new DimensionFieldConverter.StringFieldConverter(this, type.getName());
-//              break;
-//            default:
-//              converters[i] = new DimensionFieldConverter.NonStringFieldConverter(this, type.getName());
-//              break;
-//          }
         } else {
-          converters[i] = new MetricFieldConverter(this, type.getName());
+          converters.add(new MetricFieldConverter(this, type.getName()));
         }
       } else if (type.getOriginalType() == OriginalType.LIST) {
-        converters[i] = new DimensionFieldConverter.ListFieldConverter(this, type.asGroupType(), type.getName());
+        converters.add(new DimensionFieldConverter.ListFieldConverter(this, type.asGroupType(), type.getName()));
       } else {
-        throw new IllegalArgumentException("Incompatibal field: <"
-                                           + type.getName()
-                                           + ", "
-                                           + type.getOriginalType()
-                                           + ">");
+        throw new IAE("Incompatible field: <%s, %s>", type.getName(), type.getOriginalType());
       }
     }
   }
@@ -73,7 +83,7 @@ public class InputRowGroupConverter extends DruidGroupConverter
   @Override
   public Converter getConverter(int fieldIndex)
   {
-    return converters[fieldIndex];
+    return converters.get(fieldIndex);
   }
 
   public InputRow getCurrent()
