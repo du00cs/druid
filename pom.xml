@@ -99,8 +99,8 @@
         <!--<module>extensions/kafka-extraction-namespace</module>-->
         <!--<module>extensions/cloudfiles-extensions</module>-->
         <!--<module>extensions/datasketches</module>-->
-        <!--<module>extensions/avro-extensions</module>-->
-        <module>extensions/parquet-extensions</module>
+        <module>extensions/avro-extensions</module>
+        <!--<module>extensions/parquet-extensions</module>-->
         <!-- distribution packaging -->
         <module>distribution</module>
 

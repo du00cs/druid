@@ -1,0 +1,56 @@
+{
+  "dataSchema": {
+    "dataSource": "wikipedia",
+    "parser": {
+      "type": "parquet",
+      "parseSpec": {
+        "format": "json",
+        "timestampSpec": {
+          "column": "timestamp",
+          "format": "auto"
+        },
+        "dimensionsSpec": {
+          "dimensions": [
+            "page",
+            "language",
+            "user"
+          ],
+          "dimensionExclusions": [],
+          "spatialDimensions": []
+        }
+      }
+    },
+    "metricsSpec": [
+      {
+        "type": "count",
+        "name": "count"
+      },
+      {
+        "type": "doubleSum",
+        "name": "added",
+        "fieldName": "added"
+      }
+    ],
+    "granularitySpec": {
+      "type": "uniform",
+      "segmentGranularity": "DAY",
+      "queryGranularity": "NONE",
+      "intervals": ["2013-08-31/2013-09-01"]
+    }
+  },
+  "ioConfig": {
+    "type": "hadoop",
+    "inputSpec": {
+      "type": "static",
+      "paths": "examples/indexing/wikipedia_data.json"
+    },
+    "segmentOutputPath": "\/tmp\/segments"
+  },
+  "tuningConfig": {
+    "type": "hadoop",
+    "workingPath": "\/tmp\/working_path",
+    "partitionsSpec": {
+      "targetPartitionSize": 5000000
+    }
+  }
+}
