@@ -190,6 +190,34 @@ For example, using Avro Hadoop parser with custom reader's schema file:
 }
 ```
 
+### Parquet Hadoop Parser
+
+This is for batch ingestion using the HadoopDruidIndexer, ike `Avro Hadoop Parser` above. The `inputFormat` of `inputSpec` in `ioConfig` must be set to `"io.druid.data.input.avro.DruidAvroParquetInputFormat"`.
+
+```json
+{
+  "type" : "index_hadoop",
+  "spec" : {
+    "dataSchema" : {
+      "dataSource" : "",
+      "parser" : {
+        "type" : "avro_hadoop",
+        "parseSpec" : "<standard_druid_parseSpec>"
+      }
+    },
+    "ioConfig" : {
+      "type" : "hadoop",
+      "inputSpec" : {
+        "type" : "static",
+        "inputFormat": "io.druid.data.input.avro.DruidAvroParquetInputFormat",
+        "paths" : ""
+      }
+    },
+    "tuningConfig" : {...}
+  }
+}
+```
+
 ### ParseSpec
 
 If `format` is not included, the parseSpec defaults to `tsv`.
