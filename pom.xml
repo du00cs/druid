@@ -67,7 +67,7 @@
         <log4j.version>2.5</log4j.version>
         <slf4j.version>1.7.12</slf4j.version>
         <!-- If compiling with different hadoop version also modify default hadoop coordinates in TaskConfig.java -->
-        <hadoop.compile.version>2.3.0</hadoop.compile.version>
+        <hadoop.compile.version>2.6.0-mdh3.9.0-jre1.8</hadoop.compile.version>
         <hive.version>2.0.0</hive.version>
     </properties>
 
@@ -80,8 +80,8 @@
         <module>processing</module>
         <module>server</module>
         <module>services</module>
-        <module>integration-tests</module>
-        <module>benchmarks</module>
+        <!-- <module>integration-tests</module> -->
+        <!-- <module>benchmarks</module> -->
         <module>aws-common</module>
         <!-- Core extensions -->
         <module>extensions-core/avro-extensions</module>
@@ -89,26 +89,26 @@
         <module>extensions-core/hdfs-storage</module>
         <module>extensions-core/histogram</module>
         <module>extensions-core/stats</module>
-        <module>extensions-core/kafka-eight</module>
-        <module>extensions-core/kafka-extraction-namespace</module>
+        <!-- <module>extensions-core/kafka-eight</module> -->
+        <!-- <module>extensions-core/kafka-extraction-namespace</module> -->
         <module>extensions-core/kafka-indexing-service</module>
         <module>extensions-core/mysql-metadata-storage</module>
-        <module>extensions-core/postgresql-metadata-storage</module>
-        <module>extensions-core/lookups-cached-global</module>
-        <module>extensions-core/lookups-cached-single</module>
-        <module>extensions-core/s3-extensions</module>
+        <!-- <module>extensions-core/postgresql-metadata-storage</module> -->
+        <!-- <module>extensions-core/lookups-cached-global</module> -->
+        <!-- <module>extensions-core/lookups-cached-single</module> -->
+        <!-- <module>extensions-core/s3-extensions</module> -->
         <!-- Community extensions -->
-        <module>extensions-contrib/azure-extensions</module>
-        <module>extensions-contrib/cassandra-storage</module>
+        <!-- <module>extensions-contrib/azure-extensions</module> -->
+        <!-- <module>extensions-contrib/cassandra-storage</module>
         <module>extensions-contrib/druid-rocketmq</module>
-        <module>extensions-contrib/cloudfiles-extensions</module>
+        <module>extensions-contrib/cloudfiles-extensions</module> -->
         <module>extensions-contrib/graphite-emitter</module>
-        <module>extensions-contrib/kafka-eight-simpleConsumer</module>
-        <module>extensions-contrib/rabbitmq</module>
-        <module>extensions-contrib/distinctcount</module>
+        <!-- <module>extensions-contrib/kafka-eight-simpleConsumer</module> -->
+        <!-- <module>extensions-contrib/rabbitmq</module> -->
+        <!-- <module>extensions-contrib/distinctcount</module> -->
         <module>extensions-contrib/parquet-extensions</module>
-        <module>extensions-contrib/statsd-emitter</module>
-        <module>extensions-contrib/orc-extensions</module>
+        <!-- <module>extensions-contrib/statsd-emitter</module> -->
+        <!-- <module>extensions-contrib/orc-extensions</module> -->
     </modules>
 
     <dependencyManagement>

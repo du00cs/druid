@@ -1,0 +1,791 @@
+diff --git a/distribution/pom.xml b/distribution/pom.xml
+index bc056e4..3cf53e7 100644
+--- a/distribution/pom.xml
++++ b/distribution/pom.xml
+@@ -67,8 +67,6 @@
+                                 <argument>--clean</argument>
+                                 <argument>--defaultVersion</argument>
+                                 <argument>${project.parent.version}</argument>
+-                                <argument>-h</argument>
+-                                <argument>org.apache.hadoop:hadoop-client_1.8:2.6.0-mdh3.9.0</argument>
+                                 <argument>-l</argument>
+                                 <argument>${settings.localRepository}</argument>
+                                 <argument>-c</argument>
+@@ -92,15 +90,30 @@
+                                 <argument>-c</argument>
+                                 <argument>io.druid.extensions:druid-namespace-lookup</argument>
+                                 <argument>-c</argument>
++                                <argument>io.druid.extensions:druid-s3-extensions</argument>
++                                <argument>-c</argument>
+                                 <argument>io.druid.extensions:mysql-metadata-storage</argument>
+                                 <argument>-c</argument>
+                                 <argument>io.druid.extensions:postgresql-metadata-storage</argument>
+-                                <argument>-c</argument>
+-                                <argument>io.druid.extensions.contrib:druid-parquet-extensions</argument>
+-                                <argument>-c</argument>
+-                                <argument>io.druid.extensions.contrib:graphite-emitter</argument>
+-                                <argument>-c</argument>
+-                                <argument>io.druid.extensions.contrib:druid-thrift-extensions</argument>
++                            </arguments>
++                        </configuration>
++                    </execution>
++                    <execution>
++                        <id>mysql-tarball</id>
++                        <phase>package</phase>
++                        <goals>
++                            <goal>exec</goal>
++                        </goals>
++                        <configuration>
++                            <executable>tar</executable>
++                            <arguments>
++                                <argument>-C</argument>
++                                <argument>${project.build.directory}/extensions</argument>
++                                <argument>-czvf</argument>
++                                <argument>
++                                    ${project.build.directory}/mysql-metadata-storage-${project.parent.version}.tar.gz
++                                </argument>
++                                <argument>mysql-metadata-storage</argument>
+                             </arguments>
+                         </configuration>
+                     </execution>
+@@ -126,6 +139,18 @@
+                     </execution>
+                 </executions>
+             </plugin>
++            <plugin>
++                <groupId>org.codehaus.mojo</groupId>
++                <artifactId>license-maven-plugin</artifactId>
++                <executions>
++                    <execution>
++                        <id>download-licenses</id>
++                        <goals>
++                            <goal>download-licenses</goal>
++                        </goals>
++                    </execution>
++                </executions>
++            </plugin>
+         </plugins>
+     </build>
+ </project>
+diff --git a/distribution/src/assembly/assembly.xml b/distribution/src/assembly/assembly.xml
+index afd11f3..9e7853a 100644
+--- a/distribution/src/assembly/assembly.xml
++++ b/distribution/src/assembly/assembly.xml
+@@ -30,7 +30,7 @@
+                 <include>*/*</include>
+             </includes>
+             <excludes>
+-                <exclude>druid-parquet-extensions/jackson*</exclude>
++                <exclude>mysql-metadata-storage/**</exclude>
+             </excludes>
+             <outputDirectory>extensions</outputDirectory>
+         </fileSet>
+@@ -40,10 +40,6 @@
+             <includes>
+                 <include>*/*/*</include>
+             </includes>
+-            <excludes>
+-                <exclude>*/*/jackson*</exclude>
+-                <exclude>*/*/guava*</exclude>
+-            </excludes>
+             <outputDirectory>hadoop-dependencies</outputDirectory>
+         </fileSet>
+ 
+diff --git a/extensions-contrib/graphite-emitter/src/main/java/io/druid/emitter/graphite/GraphiteEmitter.java b/extensions-contrib/graphite-emitter/src/main/java/io/druid/emitter/graphite/GraphiteEmitter.java
+index 402a5dc..52e892c 100644
+--- a/extensions-contrib/graphite-emitter/src/main/java/io/druid/emitter/graphite/GraphiteEmitter.java
++++ b/extensions-contrib/graphite-emitter/src/main/java/io/druid/emitter/graphite/GraphiteEmitter.java
+@@ -124,7 +124,7 @@ public class GraphiteEmitter implements Emitter
+         emitter.emit(event);
+       }
+     } else {
+-      log.error("unknown event type [%s]", event.getClass());
++      throw new ISE("unknown event type [%s]", event.getClass());
+     }
+   }
+ 
+diff --git a/extensions-contrib/parquet-extensions/example/wikipedia_hadoop_parquet_task.json b/extensions-contrib/parquet-extensions/example/wikipedia_hadoop_parquet_task.json
+index 802ff1f..858636b 100755
+--- a/extensions-contrib/parquet-extensions/example/wikipedia_hadoop_parquet_task.json
++++ b/extensions-contrib/parquet-extensions/example/wikipedia_hadoop_parquet_task.json
+@@ -32,11 +32,6 @@
+       },
+       "metricsSpec": [
+         {
+-          "type" : "thetaSketch",
+-          "name" : "user_sketch",
+-          "fieldName" : "user"
+-        },
+-        {
+           "type": "count",
+           "name": "count"
+         },
+diff --git a/extensions-contrib/parquet-extensions/pom.xml b/extensions-contrib/parquet-extensions/pom.xml
+index c111d08..147073e 100644
+--- a/extensions-contrib/parquet-extensions/pom.xml
++++ b/extensions-contrib/parquet-extensions/pom.xml
+@@ -23,7 +23,7 @@
+         <dependency>
+             <groupId>org.apache.parquet</groupId>
+             <artifactId>parquet-avro</artifactId>
+-            <version>1.8.1</version>
++            <version>1.8.0</version>
+         </dependency>
+         <dependency>
+             <groupId>io.druid</groupId>
+@@ -33,7 +33,7 @@
+         </dependency>
+         <dependency>
+             <groupId>org.apache.hadoop</groupId>
+-            <artifactId>hadoop-client_1.8</artifactId>
++            <artifactId>hadoop-client</artifactId>
+             <scope>provided</scope>
+         </dependency>
+         <dependency>
+diff --git a/extensions-contrib/thrift-extensions/example/book.jar b/extensions-contrib/thrift-extensions/example/book.jar
+deleted file mode 100644
+index 4133a8f..0000000
+Binary files a/extensions-contrib/thrift-extensions/example/book.jar and /dev/null differ
+diff --git a/extensions-contrib/thrift-extensions/example/book.thrift b/extensions-contrib/thrift-extensions/example/book.thrift
+deleted file mode 100644
+index bccea02..0000000
+--- a/extensions-contrib/thrift-extensions/example/book.thrift
++++ /dev/null
+@@ -1,13 +0,0 @@
+-namespace java io.druid.data.input.thrift
+-
+-struct Author {
+-  1: string firstName;
+-  2: string lastName;
+-}
+-
+-struct Book {
+-  1: i64 date;
+-  2: double price;
+-  3: string title;
+-  4: Author author;
+-}
+diff --git a/extensions-contrib/thrift-extensions/example/books.json b/extensions-contrib/thrift-extensions/example/books.json
+deleted file mode 100644
+index a866524..0000000
+--- a/extensions-contrib/thrift-extensions/example/books.json
++++ /dev/null
+@@ -1,65 +0,0 @@
+-{
+-  "type" : "index_hadoop",
+-  "spec" : {
+-    "dataSchema" : {
+-      "dataSource" : "test",
+-      "parser" : {
+-        "type" : "thrift",
+-        "jarPath" : "example/book.jar",
+-        "thriftClass": "io.druid.data.input.thrift.Book",
+-        "protocol" : "compact",
+-        "parseSpec" : {
+-          "format" : "json",
+-          "timestampSpec" : {
+-            "column" : "date",
+-            "format" : "auto"
+-          },
+-          "flattenSpec" : {
+-            "useFieldDiscovery" : true,
+-            "fields" : [ {
+-              "type" : "path",
+-              "name" : "lastName",
+-              "expr" : "$.author.lastName"
+-            }, "title" ]
+-          },
+-          "dimensionsSpec" : {
+-            "dimensions" : [ "title", "lastName" ]
+-          }
+-        }
+-      },
+-      "metricsSpec" : [ {
+-        "type" : "count",
+-        "name" : "count"
+-      }, {
+-        "type" : "doubleSum",
+-        "name" : "cost",
+-        "fieldName" : "price"
+-      } ],
+-      "granularitySpec" : {
+-        "type" : "uniform",
+-        "segmentGranularity" : "DAY",
+-        "queryGranularity" : "DAY",
+-        "intervals" : [ "2015-09-01/2015-10-01" ]
+-      }
+-    },
+-    "ioConfig" : {
+-      "type" : "hadoop",
+-      "inputSpec" : {
+-        "type" : "static",
+-        "inputFormat" : "org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat",
+-        "paths" : "example/book.seq"
+-      }
+-    },
+-    "tuningConfig" : {
+-      "type" : "hadoop",
+-      "partitionsSpec" : {
+-        "type" : "hashed",
+-        "targetPartitionSize" : 5000000
+-      },
+-      "jobProperties" : {
+-        "tmpjars": "/user/xxx/druid/test/book.jar"
+-      }
+-    }
+-  },
+-  "dataSource" : "test"
+-}
+diff --git a/extensions-contrib/thrift-extensions/pom.xml b/extensions-contrib/thrift-extensions/pom.xml
+deleted file mode 100644
+index 961bcb5..0000000
+--- a/extensions-contrib/thrift-extensions/pom.xml
++++ /dev/null
+@@ -1,43 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project xmlns="http://maven.apache.org/POM/4.0.0"
+-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+-
+-  <groupId>io.druid.extensions.contrib</groupId>
+-  <artifactId>druid-thrift-extensions</artifactId>
+-  <name>druid-thrift-extensions</name>
+-  <description>druid-thrift-extensions</description>
+-
+-  <parent>
+-    <artifactId>druid</artifactId>
+-    <groupId>io.druid</groupId>
+-    <version>0.9.1.1</version>
+-    <relativePath>../../pom.xml</relativePath>
+-  </parent>
+-  <modelVersion>4.0.0</modelVersion>
+-
+-  <dependencies>
+-    <dependency>
+-      <groupId>org.apache.thrift</groupId>
+-      <artifactId>thrift</artifactId>
+-      <version>0.5.0-fix-thrift1190</version>
+-    </dependency>
+-    <dependency>
+-      <groupId>io.druid</groupId>
+-      <artifactId>druid-indexing-hadoop</artifactId>
+-      <version>${project.parent.version}</version>
+-      <scope>provided</scope>
+-    </dependency>
+-    <dependency>
+-      <groupId>org.apache.hadoop</groupId>
+-      <artifactId>hadoop-client_1.8</artifactId>
+-      <scope>provided</scope>
+-    </dependency>
+-    <dependency>
+-      <groupId>junit</groupId>
+-      <artifactId>junit</artifactId>
+-      <scope>test</scope>
+-    </dependency>
+-  </dependencies>
+-
+-</project>
+diff --git a/extensions-contrib/thrift-extensions/src/main/java/io/druid/data/input/thrift/ThriftExtensionsModule.java b/extensions-contrib/thrift-extensions/src/main/java/io/druid/data/input/thrift/ThriftExtensionsModule.java
+deleted file mode 100644
+index ab443b6..0000000
+--- a/extensions-contrib/thrift-extensions/src/main/java/io/druid/data/input/thrift/ThriftExtensionsModule.java
++++ /dev/null
+@@ -1,48 +0,0 @@
+-/*
+- * Licensed to Metamarkets Group Inc. (Metamarkets) under one
+- * or more contributor license agreements.  See the NOTICE file
+- * distributed with this work for additional information
+- * regarding copyright ownership.  Metamarkets licenses this file
+- * to you under the Apache License, Version 2.0 (the
+- * "License"); you may not use this file except in compliance
+- * with the License.  You may obtain a copy of the License at
+- *
+- *   http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing,
+- * software distributed under the License is distributed on an
+- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+- * KIND, either express or implied.  See the License for the
+- * specific language governing permissions and limitations
+- * under the License.
+- */
+-
+-package io.druid.data.input.thrift;
+-
+-import com.fasterxml.jackson.databind.Module;
+-import com.fasterxml.jackson.databind.jsontype.NamedType;
+-import com.fasterxml.jackson.databind.module.SimpleModule;
+-import com.google.inject.Binder;
+-import io.druid.initialization.DruidModule;
+-
+-import java.util.Arrays;
+-import java.util.List;
+-
+-public class ThriftExtensionsModule implements DruidModule
+-{
+-
+-  @Override
+-  public List<? extends Module> getJacksonModules()
+-  {
+-    return Arrays.asList(
+-        new SimpleModule("ThriftInputRowParserModule")
+-            .registerSubtypes(
+-                new NamedType(ThriftInputRowParser.class, "thrift")
+-            )
+-    );
+-  }
+-
+-  @Override
+-  public void configure(Binder binder)
+-  { }
+-}
+diff --git a/extensions-contrib/thrift-extensions/src/main/java/io/druid/data/input/thrift/ThriftInputRowParser.java b/extensions-contrib/thrift-extensions/src/main/java/io/druid/data/input/thrift/ThriftInputRowParser.java
+deleted file mode 100644
+index 2a94f62..0000000
+--- a/extensions-contrib/thrift-extensions/src/main/java/io/druid/data/input/thrift/ThriftInputRowParser.java
++++ /dev/null
+@@ -1,169 +0,0 @@
+-/*
+- * Licensed to Metamarkets Group Inc. (Metamarkets) under one
+- * or more contributor license agreements.  See the NOTICE file
+- * distributed with this work for additional information
+- * regarding copyright ownership.  Metamarkets licenses this file
+- * to you under the Apache License, Version 2.0 (the
+- * "License"); you may not use this file except in compliance
+- * with the License.  You may obtain a copy of the License at
+- *
+- *   http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing,
+- * software distributed under the License is distributed on an
+- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+- * KIND, either express or implied.  See the License for the
+- * specific language governing permissions and limitations
+- * under the License.
+- */
+-
+-package io.druid.data.input.thrift;
+-
+-import com.fasterxml.jackson.annotation.JsonCreator;
+-import com.fasterxml.jackson.annotation.JsonProperty;
+-import com.google.common.base.Preconditions;
+-import com.metamx.common.IAE;
+-import com.metamx.common.parsers.Parser;
+-import io.druid.data.input.InputRow;
+-import io.druid.data.input.MapBasedInputRow;
+-import io.druid.data.input.impl.InputRowParser;
+-import io.druid.data.input.impl.ParseSpec;
+-import org.apache.hadoop.io.BytesWritable;
+-import org.apache.thrift.TBase;
+-import org.apache.thrift.TDeserializer;
+-import org.apache.thrift.TSerializer;
+-import org.apache.thrift.protocol.TBinaryProtocol;
+-import org.apache.thrift.protocol.TCompactProtocol;
+-import org.apache.thrift.protocol.TSimpleJSONProtocol;
+-
+-import java.io.File;
+-import java.io.IOException;
+-import java.net.URL;
+-import java.net.URLClassLoader;
+-import java.nio.ByteBuffer;
+-import java.util.Map;
+-
+-/**
+- * 1. thrift definitions to java/scala class
+- * 2. deserialize bytes to thrift/scrooge instance
+- * 3. serialize to json and fall back to the json flatSpec
+- */
+-public class ThriftInputRowParser implements InputRowParser<Object>
+-{
+-  private final ParseSpec parseSpec;
+-  private final String jarPath;
+-  private final String thriftClassName;
+-  private final String protocol;
+-
+-  final private TDeserializer deserializer;
+-  final private TSerializer serializer = new TSerializer(new TSimpleJSONProtocol.Factory());
+-  final private Parser<String, Object> parser;
+-  volatile private Class<TBase> thriftClass = null;
+-
+-  @JsonCreator
+-  public ThriftInputRowParser(
+-      @JsonProperty("parseSpec") ParseSpec parseSpec,
+-      @JsonProperty("thriftJar") String jarPath,
+-      @JsonProperty("thriftClass") String thriftClassName,
+-      @JsonProperty("protocol") String protocol
+-  )
+-  {
+-    this.protocol = protocol;
+-
+-    if (protocol == null || protocol.equals("compact")) {
+-      deserializer = new TDeserializer(new TCompactProtocol.Factory());
+-    } else if (protocol.equals("binary")) {
+-      deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+-    } else {
+-      throw new IAE("Unsupport protocol [%s], please use one of [compact, binary]", protocol);
+-    }
+-
+-    this.jarPath = jarPath;
+-    this.thriftClassName = thriftClassName;
+-    Preconditions.checkNotNull(thriftClassName, "thrift class name");
+-
+-    this.parseSpec = parseSpec;
+-    this.parser = parseSpec.makeParser();
+-  }
+-
+-  protected Class<TBase> getThriftClass()
+-      throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException
+-  {
+-    final Class<TBase> thriftclass;
+-    if(jarPath != null){
+-      File jar = new File(jarPath);
+-      URLClassLoader child = new URLClassLoader(
+-          new URL[]{jar.toURI().toURL()},
+-          this.getClass().getClassLoader()
+-      );
+-      thriftclass = (Class<TBase>) Class.forName(thriftClassName, true, child);
+-    } else {
+-      thriftclass = (Class<TBase>) Class.forName(thriftClassName);
+-    }
+-    thriftclass.newInstance();
+-    return thriftclass;
+-  }
+-
+-
+-  @Override
+-  public InputRow parse(Object input)
+-  {
+-    // There is a Parser check in mapreduce job phase 2, thrift jar may not present in peon side.
+-    // Place it this initialization in constructor will get a ClassNotFoundException
+-    try {
+-      if(thriftClass == null) {
+-        thriftClass = getThriftClass();
+-      }
+-    }
+-    catch (IOException e) {
+-      throw new IAE(e, "failed to load jar [%s]", jarPath);
+-    }
+-    catch (ClassNotFoundException e) {
+-      throw new IAE(e, "class [%s] not found in jar", thriftClassName);
+-    }
+-    catch (InstantiationException e) {
+-      throw new IAE(e, "instantiation thrift instance failed");
+-    }
+-    catch (IllegalAccessException e) {
+-      throw new IAE(e, "instantiation thrift instance failed, IllegalAccessException");
+-    }
+-
+-    try {
+-      final byte[] bytes;
+-      if (input instanceof BytesWritable) {
+-        bytes = ((BytesWritable) input).getBytes();
+-      } else if (input instanceof ByteBuffer) {
+-        bytes = ((ByteBuffer) input).array();
+-      } else {
+-        throw new IAE("unsupport input format [%s]", input.getClass());
+-      }
+-
+-      TBase o = thriftClass.newInstance();
+-      deserializer.deserialize(o, bytes);
+-      String json = serializer.toString(o);
+-
+-      Map<String, Object> record = parser.parse(json);
+-
+-      return new MapBasedInputRow(
+-          parseSpec.getTimestampSpec().extractTimestamp(record),
+-          parseSpec.getDimensionsSpec().getDimensionNames(),
+-          record
+-      );
+-    }
+-    catch (Exception e) {
+-      return null;
+-    }
+-  }
+-
+-  @Override
+-  public ParseSpec getParseSpec()
+-  {
+-    return parseSpec;
+-  }
+-
+-  @Override
+-  public InputRowParser withParseSpec(ParseSpec parseSpec)
+-  {
+-    return new ThriftInputRowParser(parseSpec, jarPath, thriftClassName, protocol);
+-  }
+-}
+diff --git a/extensions-contrib/thrift-extensions/src/main/resources/META-INF/services/io.druid.initialization.DruidModule b/extensions-contrib/thrift-extensions/src/main/resources/META-INF/services/io.druid.initialization.DruidModule
+deleted file mode 100755
+index 3b4c298..0000000
+--- a/extensions-contrib/thrift-extensions/src/main/resources/META-INF/services/io.druid.initialization.DruidModule
++++ /dev/null
+@@ -1 +0,0 @@
+-io.druid.data.input.thrift.ThriftExtensionsModule
+diff --git a/extensions-core/avro-extensions/pom.xml b/extensions-core/avro-extensions/pom.xml
+index 6d81ba2..8e59096 100644
+--- a/extensions-core/avro-extensions/pom.xml
++++ b/extensions-core/avro-extensions/pom.xml
+@@ -68,8 +68,7 @@
+     </dependency>
+     <dependency>
+       <groupId>org.apache.hadoop</groupId>
+-      <artifactId>hadoop-client_1.8</artifactId>
+-      <scope>provided</scope>
++      <artifactId>hadoop-client</artifactId>
+     </dependency>
+     <!-- Tests -->
+     <dependency>
+diff --git a/extensions-core/avro-extensions/src/main/java/io/druid/data/input/avro/GenericRecordAsMap.java b/extensions-core/avro-extensions/src/main/java/io/druid/data/input/avro/GenericRecordAsMap.java
+index 9d31bcf..e129a13 100644
+--- a/extensions-core/avro-extensions/src/main/java/io/druid/data/input/avro/GenericRecordAsMap.java
++++ b/extensions-core/avro-extensions/src/main/java/io/druid/data/input/avro/GenericRecordAsMap.java
+@@ -22,7 +22,6 @@ import com.google.common.base.Function;
+ import com.google.common.collect.Lists;
+ import org.apache.avro.generic.GenericData;
+ import org.apache.avro.generic.GenericRecord;
+-import org.apache.avro.util.Utf8;
+ 
+ import javax.annotation.Nullable;
+ import java.nio.ByteBuffer;
+@@ -105,9 +104,6 @@ public class GenericRecordAsMap implements Map<String, Object>
+     if (field instanceof ByteBuffer) {
+       return Arrays.toString(((ByteBuffer) field).array());
+     }
+-    if (field instanceof Utf8) {
+-      return field.toString();
+-    }
+     return field;
+   }
+ 
+diff --git a/extensions-core/hdfs-storage/pom.xml b/extensions-core/hdfs-storage/pom.xml
+index da66f9c..0bd00a6 100644
+--- a/extensions-core/hdfs-storage/pom.xml
++++ b/extensions-core/hdfs-storage/pom.xml
+@@ -46,7 +46,7 @@
+         </dependency>
+         <dependency>
+             <groupId>org.apache.hadoop</groupId>
+-            <artifactId>hadoop-client_1.8</artifactId>
++            <artifactId>hadoop-client</artifactId>
+             <scope>compile</scope>
+             <exclusions>
+               <exclusion>
+@@ -119,7 +119,7 @@
+               </exclusion>
+               <exclusion>
+                 <groupId>org.apache.hadoop</groupId>
+-                <artifactId>hadoop-annotations_1.8</artifactId>
++                <artifactId>hadoop-annotations</artifactId>
+               </exclusion>
+               <exclusion>
+                 <groupId>javax.activation</groupId>
+@@ -160,21 +160,21 @@
+         </dependency>
+         <dependency>
+           <groupId>org.apache.hadoop</groupId>
+-          <artifactId>hadoop-hdfs_1.8</artifactId>
++          <artifactId>hadoop-hdfs</artifactId>
+           <version>${hadoop.compile.version}</version>
+           <classifier>tests</classifier>
+           <scope>test</scope>
+         </dependency>
+         <dependency>
+           <groupId>org.apache.hadoop</groupId>
+-          <artifactId>hadoop-common_1.8</artifactId>
++          <artifactId>hadoop-common</artifactId>
+           <version>${hadoop.compile.version}</version>
+           <classifier>tests</classifier>
+           <scope>test</scope>
+         </dependency>
+         <dependency>
+           <groupId>org.apache.hadoop</groupId>
+-          <artifactId>hadoop-hdfs_1.8</artifactId>
++          <artifactId>hadoop-hdfs</artifactId>
+           <version>${hadoop.compile.version}</version>
+           <scope>test</scope>
+         </dependency>
+diff --git a/indexing-hadoop/pom.xml b/indexing-hadoop/pom.xml
+index 21a480a..7e35007 100644
+--- a/indexing-hadoop/pom.xml
++++ b/indexing-hadoop/pom.xml
+@@ -68,7 +68,7 @@
+         </dependency>
+         <dependency>
+             <groupId>org.apache.hadoop</groupId>
+-            <artifactId>hadoop-client_1.8</artifactId>
++            <artifactId>hadoop-client</artifactId>
+             <scope>provided</scope>
+         </dependency>
+         <dependency>
+@@ -110,21 +110,21 @@
+         </dependency>
+         <dependency>
+             <groupId>org.apache.hadoop</groupId>
+-            <artifactId>hadoop-hdfs_1.8</artifactId>
++            <artifactId>hadoop-hdfs</artifactId>
+             <version>${hadoop.compile.version}</version>
+             <classifier>tests</classifier>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+             <groupId>org.apache.hadoop</groupId>
+-            <artifactId>hadoop-common_1.8</artifactId>
++            <artifactId>hadoop-common</artifactId>
+             <version>${hadoop.compile.version}</version>
+             <classifier>tests</classifier>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+             <groupId>org.apache.hadoop</groupId>
+-            <artifactId>hadoop-hdfs_1.8</artifactId>
++            <artifactId>hadoop-hdfs</artifactId>
+             <version>${hadoop.compile.version}</version>
+             <scope>test</scope>
+         </dependency>
+diff --git a/indexing-hadoop/src/main/java/io/druid/indexer/JobHelper.java b/indexing-hadoop/src/main/java/io/druid/indexer/JobHelper.java
+index 068a3f6..0148cad 100644
+--- a/indexing-hadoop/src/main/java/io/druid/indexer/JobHelper.java
++++ b/indexing-hadoop/src/main/java/io/druid/indexer/JobHelper.java
+@@ -49,8 +49,6 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
+ import org.apache.hadoop.mapreduce.TaskAttemptID;
+ import org.apache.hadoop.util.Progressable;
+ import org.joda.time.DateTime;
+-import org.slf4j.LoggerFactory;
+-import org.slf4j.helpers.Util;
+ 
+ import java.io.BufferedOutputStream;
+ import java.io.File;
+@@ -60,10 +58,7 @@ import java.io.IOException;
+ import java.io.OutputStream;
+ import java.net.URI;
+ import java.net.URISyntaxException;
+-import java.net.URL;
+ import java.util.Arrays;
+-import java.util.Enumeration;
+-import java.util.LinkedHashSet;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
+@@ -130,23 +125,10 @@ public class JobHelper
+       return;
+     }
+ 
+-    Set<String> exludes = Sets.newHashSet(
+-        "ext-log4j-1.0.0-SNAPSHOT.jar",
+-        "scribe-log4j-1.0.0-SNAPSHOT.jar",
+-        "log4j-1.2-api-2.5.jar",
+-        "log4j-jul-2.5.jar",
+-//        "log4j-core-2.5.jar",
+-        "log4j-api-2.5.jar",
+-        "log4j-slf4j-impl-2.5.jar",
+-        "commons-logging-1.1.1.jar"
+-    );
+-
+     for (String jarFilePath : jarFiles) {
+ 
+       final File jarFile = new File(jarFilePath);
+-      if (jarFile.getName().endsWith(".jar") &&
+-          !exludes.contains(jarFile.getName())
+-          ) {
++      if (jarFile.getName().endsWith(".jar")) {
+         try {
+           RetryUtils.retry(
+               new Callable<Boolean>()
+diff --git a/indexing-service/pom.xml b/indexing-service/pom.xml
+index c3ec1a7..65c79cc 100644
+--- a/indexing-service/pom.xml
++++ b/indexing-service/pom.xml
+@@ -64,7 +64,7 @@
+         </dependency>
+         <dependency>
+             <groupId>org.apache.hadoop</groupId>
+-            <artifactId>hadoop-client_1.8</artifactId>
++            <artifactId>hadoop-client</artifactId>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+diff --git a/pom.xml b/pom.xml
+index d2eeeac..1e8a004 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -60,12 +60,12 @@
+         <metamx.java-util.version>0.27.9</metamx.java-util.version>
+         <apache.curator.version>2.10.0</apache.curator.version>
+         <jetty.version>9.2.5.v20141112</jetty.version>
+-        <jersey.version>1.9</jersey.version>
++        <jersey.version>1.19</jersey.version>
+         <!-- Watch out for Hadoop compatibility when updating to >= 2.5; see https://github.com/druid-io/druid/pull/1669 -->
+         <jackson.version>2.4.6</jackson.version>
+         <log4j.version>2.5</log4j.version>
+         <slf4j.version>1.7.12</slf4j.version>
+-        <hadoop.compile.version>2.6.0-mdh3.9.0</hadoop.compile.version>
++        <hadoop.compile.version>2.3.0</hadoop.compile.version>
+     </properties>
+ 
+     <modules>
+@@ -84,27 +84,26 @@
+         <module>extensions-core/avro-extensions</module>
+         <module>extensions-core/datasketches</module>
+         <module>extensions-core/hdfs-storage</module>
+-        <!--<module>extensions-core/histogram</module>-->
+-        <!--<module>extensions-core/kafka-eight</module>-->
+-        <!--<module>extensions-core/kafka-extraction-namespace</module>-->
+-        <!--<module>extensions-core/kafka-indexing-service</module>-->
++        <module>extensions-core/histogram</module>
++        <module>extensions-core/kafka-eight</module>
++        <module>extensions-core/kafka-extraction-namespace</module>
++        <module>extensions-core/kafka-indexing-service</module>
+         <module>extensions-core/mysql-metadata-storage</module>
+         <module>extensions-core/postgresql-metadata-storage</module>
+-        <!--<module>extensions-core/lookups-cached-global</module>-->
+-        <!--<module>extensions-core/namespace-lookup</module> &lt;!&ndash; ONLY FOR 0.9.1 TRANSITION &ndash;&gt;-->
+-        <!--<module>extensions-core/s3-extensions</module>-->
++        <module>extensions-core/lookups-cached-global</module>
++        <module>extensions-core/namespace-lookup</module> <!-- ONLY FOR 0.9.1 TRANSITION -->
++        <module>extensions-core/s3-extensions</module>
+         <!-- Community extensions -->
+-        <!--<module>extensions-contrib/azure-extensions</module>-->
+-        <!--<module>extensions-contrib/cassandra-storage</module>-->
+-        <!--<module>extensions-contrib/druid-rocketmq</module>-->
+-        <!--<module>extensions-contrib/cloudfiles-extensions</module>-->
++        <module>extensions-contrib/azure-extensions</module>
++        <module>extensions-contrib/cassandra-storage</module>
++        <module>extensions-contrib/druid-rocketmq</module>
++        <module>extensions-contrib/cloudfiles-extensions</module>
+         <module>extensions-contrib/graphite-emitter</module>
+-        <!--<module>extensions-contrib/kafka-eight-simpleConsumer</module>-->
+-        <!--<module>extensions-contrib/rabbitmq</module>-->
+-        <!--<module>extensions-contrib/distinctcount</module>-->
++        <module>extensions-contrib/kafka-eight-simpleConsumer</module>
++        <module>extensions-contrib/rabbitmq</module>
++        <module>extensions-contrib/distinctcount</module>
+         <module>extensions-contrib/parquet-extensions</module>
+-        <!--<module>extensions-contrib/statsd-emitter</module>-->
+-        <module>extensions-contrib/thrift-extensions</module>
++        <module>extensions-contrib/statsd-emitter</module>
+ 
+         <!-- distribution packaging -->
+         <module>distribution</module>
+@@ -548,7 +547,7 @@
+             </dependency>
+             <dependency>
+                 <groupId>org.apache.hadoop</groupId>
+-                <artifactId>hadoop-client_1.8</artifactId>
++                <artifactId>hadoop-client</artifactId>
+                 <version>${hadoop.compile.version}</version>
+                 <scope>provided</scope>
+             </dependency>
+diff --git a/services/src/main/java/io/druid/cli/PullDependencies.java b/services/src/main/java/io/druid/cli/PullDependencies.java
+index 0c38738..d52e426 100644
+--- a/services/src/main/java/io/druid/cli/PullDependencies.java
++++ b/services/src/main/java/io/druid/cli/PullDependencies.java
+@@ -177,7 +177,8 @@ public class PullDependencies implements Runnable
+       required = false
+   )
+   List<String> remoteRepositories = Lists.newArrayList(
+-      "http://nexus.d.xiaomi.net/nexus/content/groups/public"
++      "https://repo1.maven.org/maven2/",
++      "https://metamx.artifactoryonline.com/metamx/pub-libs-releases-local"
+   );
+ 
+   @Option(

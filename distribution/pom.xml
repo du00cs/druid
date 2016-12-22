@@ -82,23 +82,16 @@
                                 <argument>-c</argument>
                                 <argument>io.druid.extensions:druid-histogram</argument>
                                 <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-kafka-eight</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-kafka-extraction-namespace</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-kafka-indexing-service</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-lookups-cached-global</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-lookups-cached-single</argument>
-                                <argument>-c</argument>
-                                <argument>io.druid.extensions:druid-s3-extensions</argument>
-                                <argument>-c</argument>
                                 <argument>io.druid.extensions:druid-stats</argument>
                                 <argument>-c</argument>
                                 <argument>io.druid.extensions:mysql-metadata-storage</argument>
+                                <!-- 增加一些要用的extensions，避免一些额外拉包拉依赖  -->
                                 <argument>-c</argument>
-                                <argument>io.druid.extensions:postgresql-metadata-storage</argument>
+                                <argument>io.druid.extensions.contrib:druid-parquet-extensions</argument>
+                                <argument>-c</argument>
+                                <argument>io.druid.extensions.contrib:graphite-emitter</argument>
+                                <argument>-c</argument>
+                                <argument>io.druid.extensions.contrib:druid-thrift-extensions</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -143,7 +136,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
+            <!-- <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <executions>
@@ -154,7 +147,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin> -->
         </plugins>
     </build>
     <profiles>
